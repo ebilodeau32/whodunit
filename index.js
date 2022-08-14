@@ -163,12 +163,12 @@ let roomLookUp = {
 let commands = {
   movement: ["move", "enter", "walk", "go"],
   pickup: ["pick", "grab", "take"],
-  drop: ["drop" , "discard"],
+  drop: ["drop", "discard"],
   examine: ["read", "look", "examine", "inspect", "study"],
   talkTo: ["ask", "speak", "question", "talk"],
   help: ["help"],
   inventory: ["inventory"],
-  unlock: ["unlock" , "open"],
+  unlock: ["unlock", "open"],
   solve: ["solve"],
   room: ["room"],
 };
@@ -270,25 +270,25 @@ function takeItem(command, item) {
   let takeIt = ItemLookUp[item];
   let roomInventory = roomLookUp[locationCurrent].inventory;
 
-switch (true) {
-case playerInventory.includes(item):
-  //if item is already in player inventory
-  console.log(`You already have the ${item} in your inventory.`);
-    printInventory();
-    break;
- case roomInventory.includes(item) && gameObjects.pickUp.includes(item):
-    //if current room inventory includes item && item can be picked up
-    playerInventory.push(item);
-    console.log(
-      `You pick up the ${takeIt.name}.\n${yellowText}`
-    );
-    let itemIndex = roomInventory.indexOf(item);
-    roomInventory.splice(itemIndex, 1);
-    printInventory();
-    break;
-default:
-  console.log(`You can't ${command} that.`);
-}
+  switch (true) {
+    case playerInventory.includes(item):
+      //if item is already in player inventory
+      console.log(`You already have the ${item} in your inventory.`);
+      printInventory();
+      break;
+    case roomInventory.includes(item) && gameObjects.pickUp.includes(item):
+      //if current room inventory includes item && item can be picked up
+      playerInventory.push(item);
+      console.log(
+        `You pick up the ${takeIt.name}.\n${yellowText}`
+      );
+      let itemIndex = roomInventory.indexOf(item);
+      roomInventory.splice(itemIndex, 1);
+      printInventory();
+      break;
+    default:
+      console.log(`You can't ${command} that.`);
+  }
 }
 
 //DROP ITEM FUNCTION
@@ -304,28 +304,30 @@ function dropItem(item) {
 
 //UNLOCK SECRET DOOR FUNCTION
 function unlock(item, command) {
-  if (locationCurrent === "study") {
+switch (true) {
+  case locationCurrent === "study":
     if (playerInventory.includes("key") && item === "cabinet") {
       roomTransitions.study.canMoveTo.push("sunroom");
       roomTransitions.sunroom.canMoveTo.push("study");
+      openSecretDoor = true;
       console.log(
         `You have found a secret passage between the study and the sunroom!`
       );
     } else {
       console.log(`This door is locked. If only you had a key...`);
     }
-  } else if (
-    locationCurrent === "sunroom" &&
-    roomTransitions.study.canMoveTo == false
-  ) {
+    break;
+  case locationCurrent == "sunroom" && roomTransitions.study.canMoveTo == false:
     console.log(
       `This cabinet appears to be locked from the inside. Very curious...`
     );
-  }
-  
-  else {
+    break;
+  case roomLookUp[locationCurrent].inventory.includes("cabinet") && openSecretDoor == true:
+    console.log(`To use this secret passageway, enter which room you want to visit--the study or the sunroom.`);
+    break;
+  default:
     console.log("There is no cabinet in this room.");
-  }
+}
 }
 
 //EXAMINE ITEM
@@ -353,7 +355,7 @@ function printInventory() {
     console.log(
       `${yellowText}Player Inventory:${defaultText}`
     );
-    let printedPlayerInventory = playerInventory.forEach((item)=> console.log(`${blueText}${item}${defaultText}`))
+    let printedPlayerInventory = playerInventory.forEach((item) => console.log(`${blueText}${item}${defaultText}`))
   } else
     console.log(
       `You are not carrying anything yet! Try picking up some items in different rooms.`
@@ -374,6 +376,7 @@ function roomInventory() {
 //*-----------------------------FIRST ROOM SETUP---------------------------------
 let locationCurrent = "hall";
 let playerInventory = [];
+let openSecretDoor = false;
 
 //!---------------------------------START OF GAME---------------------------------
 
@@ -394,8 +397,8 @@ async function start() {
 
   console.log(
     welcomeMessage +
-      yellowText +
-      `${hall.name}\n\n ${defaultText}${hall.description}.`
+    yellowText +
+    `${hall.name}\n\n ${defaultText}${hall.description}.`
   );
 
   while (answer !== "exit") {
@@ -414,8 +417,8 @@ async function start() {
 
     if (commands.movement.includes(command)) {
       //MOVEMENT
-     movelocation(object);
-    
+      movelocation(object);
+
     } else if (commands.talkTo.includes(command)) {
       //TALK TO
 

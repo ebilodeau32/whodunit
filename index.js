@@ -168,8 +168,7 @@ let commands = {
   talkTo: ["ask", "speak", "question", "talk"],
   help: ["help"],
   inventory: ["inventory"],
-  unlock: ["unlock"],
-  open: ["open"],
+  unlock: ["unlock" , "open"],
   solve: ["solve"],
   room: ["room"],
 };
@@ -304,7 +303,7 @@ function dropItem(item) {
 }
 
 //UNLOCK SECRET DOOR FUNCTION
-function unlock(item) {
+function unlock(item, command) {
   if (locationCurrent === "study") {
     if (playerInventory.includes("key") && item === "cabinet") {
       roomTransitions.study.canMoveTo.push("sunroom");
@@ -322,7 +321,9 @@ function unlock(item) {
     console.log(
       `This cabinet appears to be locked from the inside. Very curious...`
     );
-  } else {
+  }
+  
+  else {
     console.log("There is no cabinet in this room.");
   }
 }
@@ -439,7 +440,7 @@ async function start() {
       //PRINT ROOM INVENTORY
 
       roomInventory();
-    } else if (commands.unlock.includes(command)) {
+    } else if (commands.unlock.includes(command) && object == "cabinet") {
       //UNLOCKING SECRET DOOR
 
       unlock(object);
@@ -447,7 +448,7 @@ async function start() {
       //EXAMINE ITEM
 
       examineItem(object);
-    } else if (command === "open" && object === "safe") {
+    } else if (commands.unlock.includes(command) && object == "safe") {
       //OPEN SAFE
 
       if (locationCurrent === "library") {

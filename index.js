@@ -12,6 +12,7 @@ function ask(questionText) {
 }
 
 //-------------TERMINAL TEXT COLORS-------------
+
 let defaultText = "\033[39m";
 let greenText = "\033[32m";
 let yellowText = "\033[0;33m";
@@ -20,6 +21,7 @@ let blueText = "\033[94m";
 let grayText = "\033[90m";
 
 //*---------------------------------CLASS CONSTRUCTORS & OBJECTS-------------------------------
+
 class Room {
   constructor(name, description, inventory) {
     this.name = name;
@@ -338,7 +340,8 @@ function examineItem(object) {
   let examineObject = ItemLookUp[object];
 
   switch (true) {
-    case roomNameLookUp.inventory.includes(object): //The locationCurrent has the item
+    case roomNameLookUp.inventory.includes(object):
+      //locationCurrent has the item
       console.log(defaultText + examineObject.description);
       break;
     case playerInventory.includes(object):
@@ -378,6 +381,7 @@ function roomInventory() {
 }
 
 //*-----------------------------FIRST ROOM SETUP---------------------------------
+
 let locationCurrent = "hall";
 let playerInventory = [];
 let openSecretDoor = false;
@@ -401,8 +405,8 @@ async function start() {
 
   console.log(
     welcomeMessage +
-    yellowText +
-    `${hall.name}\n\n ${defaultText}${hall.description}.`
+      yellowText +
+      `${hall.name}\n\n ${defaultText}${hall.description}.`
   );
 
   while (answer !== "exit") {

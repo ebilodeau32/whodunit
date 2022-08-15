@@ -31,7 +31,7 @@ class Room {
 let hall = new Room(
   "Hall",
   "The hall is a long and narrow room with a small seating area at the back. Mrs. Peacock is seated in a chair and Professor Plum stands next to her. There is one door to the left leading to the lounge, and two doors to the right leading to the study and the library",
-  ["Professor Plum", "Mrs. Peacock"]
+  ["plum", "peacock"]
 );
 let study = new Room(
   "Study",
@@ -41,12 +41,12 @@ let study = new Room(
 let lounge = new Room(
   "Lounge",
   "This small room contains a sofa and two chairs. One of the chairs is turned over and a lamp lays broken on the ground. Mr. Green’s body is on the far side of the room. You notice a key on the end table in the corner. On one side of the room is the door to the hall. On the other is the door to the kitchen.",
-  ["key", "Mr. Green"]
+  ["key", "green"]
 );
 let library = new Room(
   "Library",
   "The library walls are lined with floor to ceiling bookshelves. There is a large safe recessed into one of the shelves. Ms. Scarlett sits in a chair by the window. There are doors leading to the study and the hall.",
-  ["Ms. Scarlett", "safe"]
+  ["scarlett", "safe"]
 );
 let sunroom = new Room(
   "Sunroom",
@@ -55,13 +55,13 @@ let sunroom = new Room(
 );
 let kitchen = new Room(
   "Kitchen",
-  "The room is crowded with pots and pans filled with enough food to feed an army. A turkey sits on top of the stove, dangerously close to the edge. At the center of the kitchen table, you notice an empty candlestick holder.",
+  "The room is crowded with pots and pans filled with enough food to feed an army. A turkey sits on top of the stove, dangerously close to the edge. At the center of the kitchen table, you notice an empty candlestick.",
   ["candlestick"]
 );
 let ballroom = new Room(
   "Ballroom",
   "The ballroom is a long room with a circular table in the middle. Mrs. White is busy pacing the room from end to end. On the table, you notice a leather-bound notebook. On one side of the room there is a door leading to the sunroom and on the other is a door leading to the kichen.",
-  ["Mrs. White", "notebook"]
+  ["white", "notebook"]
 );
 
 class Item {
@@ -214,32 +214,31 @@ function sanitize(dirtyWord) {
 
 //PLAYER MOVEMENT
 function movelocation(newLocation) {
-  if (gameObjects.possibleRooms.includes(newLocation)) {
-    //room name is included in possible rooms
-    let validTransitions = roomTransitions[locationCurrent].canMoveTo;
-    let descriptionLookUp = roomLookUp[newLocation].description;
-    let roomNameLookUp = roomLookUp[newLocation].name;
-    console.log(yellowText + `\n${roomNameLookUp}\n` + defaultText); //Print name of current location to the console
-    if (validTransitions.includes(newLocation)) {
-      //if the newLocation is an allowed transition
+  let validTransitions = roomTransitions[locationCurrent].canMoveTo;
+  let descriptionLookUp = roomLookUp[newLocation].description;
+  let roomNameLookUp = roomLookUp[newLocation].name;
+  switch (true) {
+    case gameObjects.possibleRooms.includes(newLocation) &&
+      validTransitions.includes(newLocation):
+      //room name is included in possible rooms && transition is allowed
+
+      console.log(yellowText + `\n${roomNameLookUp}\n` + defaultText); //Print name of current location to the console
       locationCurrent = newLocation;
       console.log(
         defaultText + `You are in the ${roomNameLookUp}. ${descriptionLookUp}`
       );
-    } else if (locationCurrent === newLocation) {
+      break;
+    case locationCurrent === newLocation:
       //if player is already in the room requested
       console.log(
         `You are already in ${locationCurrent}. ${roomLookUp[locationCurrent].description}`
       );
-    } else {
+      break;
+    default:
       //not an allowed transition
       console.log(
         `You cannot go from the ${locationCurrent} to the ${newLocation}`
       );
-    }
-  } else {
-    //room name not included in possible room list
-    console.log(`${newLocation} does not exist. Try a different location.`);
   }
 }
 
@@ -248,20 +247,21 @@ function speakTo(name) {
   let talkTo = ItemLookUp[name];
   let roomInventoryLookUp = roomLookUp[locationCurrent].inventory;
 
-  if (roomInventoryLookUp.includes(name)) {
-    //if the name is in the inventory of locationCurrent
-    if (gameObjects.speakTo.includes(name)) {
-      //if name is on speakTo list
-
-      if (gameObjects.speakTo.includes(name)) {
-        console.log(`${yellowText}${talkTo.name} says,${defaultText}`);
-        console.log(talkTo.interactivity);
-      }
-    } else {
+  switch (true) {
+    case roomInventoryLookUp.includes(name) &&
+      gameObjects.speakTo.includes(name):
+      //if name is in the inventory of locationCurrent and can be spoken to
+      console.log(`${yellowText}${talkTo.name} says,${defaultText}`);
+      console.log(talkTo.interactivity);
+      break;
+    case !roomInventoryLookUp.includes(name) &&
+      gameObjects.speakTo.includes(name):
+      //if name is not in the room, but still in the game
+      console.log(`${ItemLookUp[name].name} is not in this room.`);
+      break;
+    default:
       console.log("You can't speak to that!");
-    }
-  } else {
-    console.log("You can't speak to that!");
+      break;
   }
 }
 
@@ -279,9 +279,7 @@ function takeItem(command, item) {
     case roomInventory.includes(item) && gameObjects.pickUp.includes(item):
       //if current room inventory includes item && item can be picked up
       playerInventory.push(item);
-      console.log(
-        `You pick up the ${takeIt.name}.\n${yellowText}`
-      );
+      console.log(`You pick up the ${takeIt.name}.\n${yellowText}`);
       let itemIndex = roomInventory.indexOf(item);
       roomInventory.splice(itemIndex, 1);
       printInventory();
@@ -304,30 +302,34 @@ function dropItem(item) {
 
 //UNLOCK SECRET DOOR FUNCTION
 function unlock(item, command) {
-switch (true) {
-  case locationCurrent === "study":
-    if (playerInventory.includes("key") && item === "cabinet") {
-      roomTransitions.study.canMoveTo.push("sunroom");
-      roomTransitions.sunroom.canMoveTo.push("study");
-      openSecretDoor = true;
+  switch (true) {
+    case locationCurrent === "study":
+      if (playerInventory.includes("key") && item === "cabinet") {
+        roomTransitions.study.canMoveTo.push("sunroom");
+        roomTransitions.sunroom.canMoveTo.push("study");
+        openSecretDoor = true;
+        console.log(
+          `You have found a secret passage between the study and the sunroom!`
+        );
+      } else {
+        console.log(`This door is locked. If only you had a key...`);
+      }
+      break;
+    case locationCurrent == "sunroom" &&
+      roomTransitions.study.canMoveTo == false:
       console.log(
-        `You have found a secret passage between the study and the sunroom!`
+        `This cabinet appears to be locked from the inside. Very curious...`
       );
-    } else {
-      console.log(`This door is locked. If only you had a key...`);
-    }
-    break;
-  case locationCurrent == "sunroom" && roomTransitions.study.canMoveTo == false:
-    console.log(
-      `This cabinet appears to be locked from the inside. Very curious...`
-    );
-    break;
-  case roomLookUp[locationCurrent].inventory.includes("cabinet") && openSecretDoor == true:
-    console.log(`To use this secret passageway, enter which room you want to visit--the study or the sunroom.`);
-    break;
-  default:
-    console.log("There is no cabinet in this room.");
-}
+      break;
+    case roomLookUp[locationCurrent].inventory.includes("cabinet") &&
+      openSecretDoor == true:
+      console.log(
+        `To use this secret passageway, enter which room you want to visit--the study or the sunroom.`
+      );
+      break;
+    default:
+      console.log("There is no cabinet in this room.");
+  }
 }
 
 //EXAMINE ITEM
@@ -352,10 +354,11 @@ function examineItem(object) {
 function printInventory() {
   if (playerInventory.length > 0) {
     //check if player is carrying anything
-    console.log(
-      `${yellowText}Player Inventory:${defaultText}`
-    );
-    let printedPlayerInventory = playerInventory.forEach((item) => console.log(`${blueText}${item}${defaultText}`))
+    console.log(`${yellowText}Player Inventory:${defaultText}`);
+    playerInventory.forEach((item) => {
+      let printedItemName = ItemLookUp[item].name;
+      console.log(`${blueText}${printedItemName}${defaultText}`);
+    });
   } else
     console.log(
       `You are not carrying anything yet! Try picking up some items in different rooms.`
@@ -368,9 +371,10 @@ function roomInventory() {
   console.log(
     `\n${yellowText}${roomLookUp[locationCurrent].name}\n\n${defaultText} ${roomLookUp[locationCurrent].description}\n\n${yellowText}Room inventory:${defaultText}`
   );
-  let printedRoomInventory = roomInventory.forEach((item) =>
-    console.log(`${blueText}${item}${defaultText}`)
-  );
+  roomInventory.forEach((item) => {
+    let printedItemName = ItemLookUp[item].name;
+    console.log(`${blueText}${printedItemName}${defaultText}`);
+  });
 }
 
 //*-----------------------------FIRST ROOM SETUP---------------------------------
@@ -418,7 +422,6 @@ async function start() {
     if (commands.movement.includes(command)) {
       //MOVEMENT
       movelocation(object);
-
     } else if (commands.talkTo.includes(command)) {
       //TALK TO
 
@@ -473,7 +476,9 @@ async function start() {
                 keepGuessing = false;
                 break;
               case "1845":
-                console.log(`${greenText}The safe is now unlocked${defaultText}`);
+                console.log(
+                  `${greenText}The safe is now unlocked${defaultText}`
+                );
                 safe = openSafe;
                 console.log(safe.description);
                 keepGuessing = false;
@@ -502,7 +507,9 @@ async function start() {
         let nameGuess = cleanGuess[cleanGuess.length - 1];
 
         if (nameGuess === "plum") {
-          console.log(`\n${greenText}Congratulations! You have solved the mystery!${defaultText}\n`);
+          console.log(
+            `\n${greenText}Congratulations! You have solved the mystery!${defaultText}\n`
+          );
           console.log(endOfStory);
           process.exit();
         } else {
